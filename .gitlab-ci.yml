@@ -1,0 +1,15 @@
+workflow:
+  rules:
+    - if: $CI_PIPELINE_SOURCE == 'push'
+    
+Trivy-Scanner:
+  script:
+    - export TRIVY_RUN_AS_PLUGIN=aqua
+    - export TRIGGERED_BY='PUSH'
+    - export trivyVersion=0.29.2
+    - wget https://github.com/aquasecurity/trivy/releases/download/v${trivyVersion}/trivy_${trivyVersion}_Linux-64bit.deb
+    - wget https://github.com/aquasecurity/trivy/releases/download/v${trivyVersion}/trivy_${trivyVersion}_checksums.txt
+    - grep trivy_${trivyVersion}_Linux-64bit.deb trivy_${trivyVersion}_checksums.txt > trivy_${trivyVersion}_Linux-64bit.checksum
+    - sha256sum -c trivy_${trivyVersion}_Linux-64bit.checksum
+    - dpkg -i trivy_${trivyVersion}_Linux-64bit.deb
+    - trivy fs --security-checks config,vuln,secret .
